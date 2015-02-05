@@ -1,9 +1,11 @@
 package com.mbusch.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,11 +57,23 @@ public class ForecastFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item){
         int id=item.getItemId();
         if(id==R.id.action_refresh){
-            FetchWeatherTask FWT = new FetchWeatherTask();
-            FWT.execute("94043");
+            updateForecast();
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    public void updateForecast(){
+        FetchWeatherTask FWT = new FetchWeatherTask();
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = prefs.getString(getString(R.string.pref_location_key),getString(R.string.pref_location_default));
+        FWT.execute(location);
+    }
+
+    @Override
+    public void onStart(){
+        super.onStart();
+        updateForecast();
     }
 
     @Override
@@ -67,7 +81,7 @@ public class ForecastFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-
+        /* Used for simple testing
         String[] fakedata = {
                 "Today - Sunny - 88/45",
                 "Tomorrow - Cloudy - 76/57",
@@ -75,11 +89,12 @@ public class ForecastFragment extends Fragment {
         };
 
         List<String> forecastData = new ArrayList<String>(Arrays.asList(fakedata));
+        */
 
         forecastAdapter = new ArrayAdapter<String>(getActivity(),
                 R.layout.list_item_forecast,
                 R.id.list_item_forecast_textview,
-                forecastData);
+                new ArrayList<String>()); // forecastData
 
         ListView forecastListView = (ListView) rootView.findViewById(R.id.listview_forecast);
 
