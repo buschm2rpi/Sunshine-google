@@ -1,6 +1,10 @@
 package com.mbusch.sunshine;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -57,9 +61,32 @@ public class MainActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             startActivity(new Intent(this,SettingsActivity.class));
             return true;
+        }else if(id == R.id.action_map){
+            openPreferredLocationInMap();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void openPreferredLocationInMap(){
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String location = prefs.getString(
+                getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+
+        Uri geolocation = Uri.parse("geo:0,0?").buildUpon().appendQueryParameter("q",location)
+                .build();
+
+        Intent mapintent = new Intent(Intent.ACTION_VIEW);
+        mapintent.setData(geolocation);
+
+        if(mapintent.resolveActivity(getPackageManager()) != null){
+            startActivity(mapintent);
+        }else{
+            Log.d("LOG TAG", "Couldn't call location for map intent.");
+        }
+
     }
 
 
